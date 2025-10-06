@@ -1,1 +1,247 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель - Анонімні Листи</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #f0f0f0;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #b0b0b0;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .send-button {
+            background: #4a4a4a;
+            color: #e0e0e0;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            flex: 1;
+        }
+
+        .send-button:hover {
+            background: #555;
+        }
+
+        .letters-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .letter-item {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4a4a4a;
+        }
+
+        .letter-header {
+            display: flex;
+            justify-content: between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .letter-date {
+            flex: 1;
+        }
+
+        .letter-content {
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .letter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-reply {
+            background: #3a5a3a;
+            color: #e0e0e0;
+        }
+
+        .btn-delete {
+            background: #5a3a3a;
+            color: #e0e0e0;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #2d4a2d;
+            color: #90ee90;
+            display: block;
+        }
+
+        .message.error {
+            background: #4a2d2d;
+            color: #ee9090;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📨 Адмін-панель</h1>
+            <p class="subtitle">Листи, які потребують уваги</p>
+        </header>
+        
+        <div class="admin-controls">
+            <button id="loadLetters" class="send-button">Завантажити листи</button>
+            <button id="clearAll" class="send-button" style="background: #5a2d2d;">Очистити всі</button>
+        </div>
+        
+        <div id="lettersList" class="letters-list">
+            <!-- Тут будуть відображатись листи -->
+        </div>
+        
+        <div id="adminMessage" class="message"></div>
+    </div>
+
+    <script>
+        class AdminPanel {
+            constructor() {
+                this.lettersList = document.getElementById('lettersList');
+                this.loadBtn = document.getElementById('loadLetters');
+                this.clearBtn = document.getElementById('clearAll');
+                this.message = document.getElementById('adminMessage');
+                
+                this.init();
+            }
+            
+            init() {
+                this.loadBtn.addEventListener('click', this.loadLetters.bind(this));
+                this.clearBtn.addEventListener('click', this.clearLetters.bind(this));
+                this.loadLetters();
+            }
+            
+            loadLetters() {
+                const letters = JSON.parse(localStorage.getItem('anonymous_letters') || '[]');
+                
+                if (letters.length === 0) {
+                    this.lettersList.innerHTML = '<p style="text-align: center; color: #888;">Немає нових листів</p>';
+                    return;
+                }
+                
+                this.lettersList.innerHTML = letters.map(letter => `
+                    <div class="letter-item">
+                        <div class="letter-header">
+                            <span class="letter-date">${new Date(letter.timestamp).toLocaleString('uk-UA')}</span>
+                            <span class="letter-ip">IP: ${letter.ip}</span>
+                        </div>
+                        <div class="letter-content">${this.escapeHtml(letter.text)}</div>
+                        <div class="letter-actions">
+                            <button class="btn btn-reply" onclick="adminPanel.replyToLetter('${letter.id}')">Відповісти</button>
+                            <button class="btn btn-delete" onclick="adminPanel.deleteLetter('${letter.id}')">Видалити</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            clearLetters() {
+                if (confirm('Ви впевнені, що хочете видалити всі листи?')) {
+                    localStorage.removeItem('anonymous_letters');
+                    this.loadLetters();
+                    this.showMessage('Всі листи видалені', 'success');
+                }
+            }
+            
+            deleteLetter(id) {
+                const letters = JSON.parse(localStorage.getItem('anonymous_letters') || '[]');
+                const filtered = letters.filter(letter => letter.id !== id);
+                localStorage.setItem('anonymous_letters', JSON.stringify(filtered));
+                this.loadLetters();
+                this.showMessage('Лист видалений', 'success');
+            }
+            
+            replyToLetter(id) {
+                const letters = JSON.parse(localStorage.getItem('anonymous_letters') || '[]');
+                const letter = letters.find(l => l.id === id);
+                if (letter) {
+                    const response = prompt(`Відповідь на лист:\n\n"${letter.text.substring(0, 100)}..."`);
+                    if (response) {
+                        this.showMessage('Відповідь збережена (в майбутньому тут буде відправка)', 'success');
+                    }
+                }
+            }
+            
+            showMessage(text, type) {
+                this.message.textContent = text;
+                this.message.className = `message ${type}`;
+                
+                setTimeout(() => {
+                    this.message.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        const adminPanel = new AdminPanel();
+    </script>
+</body>
+</html>
