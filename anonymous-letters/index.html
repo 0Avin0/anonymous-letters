@@ -1,1 +1,41 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анонімні Листи</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Анонімні Листи</h1>
+            <p class="subtitle">Виговорись. Анонімно. Безкоштовно.</p>
+        </header>
+        
+        <main class="letter-form">
+            <textarea 
+                id="letterText" 
+                placeholder="Розкажи про все, що тебе турбує... Цілком анонімно і конфіденційно."
+                maxlength="2000"
+            ></textarea>
+            
+            <div class="counter">
+                <span id="charCount">0</span>/2000
+            </div>
+            
+            <button id="sendBtn" class="send-button">
+                Надіслати лист
+            </button>
+            
+            <div id="message" class="message"></div>
+        </main>
+        
+        <footer>
+            <p>Ти не самотній. Кожна проблема важлива.</p>
+        </footer>
+    </div>
 
+    <script src="script.js"></script>
+</body>
+</html>
