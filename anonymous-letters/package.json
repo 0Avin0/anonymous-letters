@@ -1,0 +1,17 @@
+{
+  "name": "anonymous-letters",
+  "version": "1.0.0",
+  "description": "Анонімна платформа для психологічної підтримки",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["anonymous", "support", "letters"],
+  "author": "Твоє ім'я",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^4.0.0"
+  }
+}
