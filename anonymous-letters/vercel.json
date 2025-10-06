@@ -1,19 +1,15 @@
 {
   "version": 2,
-  "name": "anonymous-letters",
   "builds": [
     {
-      "src": "**/*.html",
+      "src": "*.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/(.*)", 
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
